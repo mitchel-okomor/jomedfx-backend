@@ -8,7 +8,7 @@ const investments = {
     console.log("Creating event");
     const { userId, title, amount } = req.body;
     const investment = new Investment({
-      userId,
+      user: userId,
       title,
       amount,
     });
@@ -21,6 +21,7 @@ const investments = {
       })
       .catch((err) => {
         console.log(err);
+        res.status(400).json({ status: error, message: "Operation failed" });
       });
   },
 
@@ -35,7 +36,7 @@ const investments = {
   },
 
   getUserInvestments: (req, res) => {
-    Investment.find({ userId: req.params.id }, {})
+    Investment.find({ user: req.params.id }, {})
       .then((data) => {
         console.log(data);
         res.json(data);
@@ -46,13 +47,40 @@ const investments = {
   },
 
   getAll: (req, res) => {
-    Investment.find({ userId: req.params.id })
+    Investment.find({ user: req.params.id })
       .then((data) => {
         res.json(data);
       })
       .catch((err) => {
         console.log(err);
       });
+  },
+  adminGetAll: async (req, res) => {
+    Investment.find()
+      .populate("user")
+      .exec((err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          res.json(data);
+        }
+      });
+    // Investment.aggregate(
+    //   [
+    //     {
+    //       $lookup: {
+    //         from: "users",
+    //         localField: "_id",
+    //         foreignField: "userId",
+    //         as: "user",
+    //       },
+    //     },
+    //   ],
+    //   function (err, investments) {
+    //     console.log(investments);
+    //     res.json(investments);
+    //   }
+    // );
   },
 
   delete: (req, res) => {
@@ -99,16 +127,17 @@ const investments = {
       });
   },
 
-  togglePublish: (req, res, id) => {
+  togglePaid: (req, res, id) => {
+    console.log(req.params.id);
     Investment.findById(req.params.id)
       .then((data) => {
-        const isPublished = data.isPublished;
-        console.log("publish 117: " + isPublished);
-        if (isPublished === "true") {
+        const isApproved = data.isApproved;
+        console.log("paid 117: " + isApproved);
+        if (isApproved) {
           Investment.findByIdAndUpdate(
             req.params.id,
             {
-              isPublished: false,
+              isApproved: false,
               _id: req.params.id,
             },
             {
@@ -126,7 +155,7 @@ const investments = {
           Investment.findByIdAndUpdate(
             req.params.id,
             {
-              isPublished: true,
+              isApproved: true,
               _id: req.params.id,
             },
             {
@@ -152,7 +181,7 @@ const investments = {
       .then((data) => {
         const isCompleted = data.isCompleted;
         console.log("complete 155: " + isCompleted);
-        if (isCompleted === "true") {
+        if (isCompleted) {
           Investment.findByIdAndUpdate(
             req.params.id,
             {

@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 require("../models/investment");
 require("../models/payment");
-const jwt = require("jsonwebtoken");
 
 const Investment = mongoose.model("investment");
 const Payment = mongoose.model("payment");
@@ -10,15 +9,8 @@ const payment = {
   pay: (req, res, next) => {
     const { amount, investmentId } = req.body;
     const payment = new Payment({
-      title,
-      event_type,
-      description,
-      venue,
-      date,
-      time,
-      price,
-      userId,
-      image: req.file.filename,
+      investmentId,
+      amount,
     });
     payment
       .save()
@@ -34,7 +26,7 @@ const payment = {
       });
   },
   get: (req, res) => {
-    User.findById(req.params.id)
+    Investment.findById(req.params.id)
       .then((data) => {
         res.send(data);
       })
@@ -44,7 +36,7 @@ const payment = {
   },
 
   getAll: (req, res) => {
-    User.find({})
+    Investment.find({})
       .then((data) => {
         res.send(data);
       })
@@ -54,7 +46,7 @@ const payment = {
   },
 
   delete: (req, res) => {
-    User.findByIdAndRemove(req.params.id)
+    Investment.findByIdAndRemove(req.params.id)
       .then((data) => {
         console.log(data);
         res.send("deleted");
@@ -65,7 +57,7 @@ const payment = {
   },
 
   update: (req, res) => {
-    User.findByIdAndUpdate(req.params.id, {
+    Investment.findByIdAndUpdate(req.params.id, {
       name: req.body.name,
       email: req.body.email,
       phone: req.body.phone,

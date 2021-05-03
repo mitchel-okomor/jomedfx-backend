@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 
 const eventSchema = new mongoose.Schema(
   {
-    userId: String,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
     title: String,
     amount: String,
     isApproved: { type: Boolean, default: false },

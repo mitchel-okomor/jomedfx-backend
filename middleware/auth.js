@@ -12,7 +12,7 @@ const auth = {
         }
         if (!user) {
           console.log(info);
-          res.status(501).send(info);
+          res.status(501).send("User already exist");
         } else {
           res.status(200).send(info);
         }
@@ -42,9 +42,26 @@ const auth = {
 
   //verify token in header
   jwt: (req, res, next) => {
-    console.log(req.headers);
     passport.authenticate(
       "jwt",
+      { session: false },
+      function (err, user, info) {
+        if (err) {
+          return next(err);
+        }
+        if (!user) {
+          res.status(401).send(info);
+        } else {
+          next();
+        }
+      }
+    )(req, res, next);
+  },
+  //verify token in header
+  admin: (req, res, next) => {
+    console.log(req.headers);
+    passport.authenticate(
+      "admin",
       { session: false },
       function (err, user, info) {
         if (err) {

@@ -40,8 +40,7 @@ passport.use(
           return id;
         };
         //get all user information, password has already been declared in function parameters and will be hashed below
-        const firstname = req.body.firstname.trim();
-        const lastname = req.body.lastname.trim();
+        const fullname = req.body.fullname.trim();
         const phone = req.body.phone.trim();
         const email = req.body.email.trim();
         const user_id = generateID();
@@ -57,68 +56,59 @@ passport.use(
         let password = hash;
 
         //create new user
-        try {
-          const newUser = new User({
-            firstname,
-            lastname,
-            phone,
-            email,
-            next_of_kin,
-            next_of_kin_phone,
-            date_of_birth,
-            occupation,
-            bank,
-            account_number,
-            account_name,
-            role,
-            password,
-            referal_id,
-            user_id,
+
+        const newUser = new User({
+          fullname,
+          phone,
+          email,
+          next_of_kin,
+          next_of_kin_phone,
+          date_of_birth,
+          occupation,
+          bank,
+          account_number,
+          account_name,
+          role,
+          password,
+          referal_id,
+        });
+        newUser
+          .save()
+          .then((user) => {
+            if (!user) {
+              return done(null, false, { message: "user not registered" });
+            }
+            if (user) {
+              //prepare user info for res
+              const data = {
+                fullname,
+                role: user.role,
+                id: user.user_id,
+              };
+
+              //sign token for user
+              const token = jwt.sign(
+                {
+                  userId: user.id,
+                },
+                process.env.SECRET,
+                { expiresIn: "12h" }
+              );
+
+              //send to user
+              return done(null, user, {
+                status: "success",
+                message: "user successfully created",
+                data,
+                token,
+              });
+            }
+            return done(null, user);
+          })
+          .catch((err) => {
+            // console.log(err);
+            return done(err, null, null);
           });
-          newUser
-            .save()
-            .then((user) => {
-              console.log("Mongo: " + user);
-              if (!user) {
-                return done(null, false, { message: "user not registered" });
-              }
-              if (user) {
-                //prepare user info for res
-                const data = {
-                  firstname: user.firstname,
-                  lastname: user.lastname,
-                  role: user.role,
-                  id: user.user_id,
-                };
-
-                //sign token for user
-                const token = jwt.sign(
-                  {
-                    userId: user.id,
-                  },
-                  process.env.SECRET,
-                  { expiresIn: "12h" }
-                );
-
-                //send to user
-                return done(null, user, {
-                  status: "success",
-                  message: "user successfully created",
-                  data,
-                  token,
-                });
-              }
-              return done(null, user);
-            })
-            .catch((err) => {
-              console.log(err);
-              return done(err, null, null);
-            });
-        } catch (err) {
-          if (err) {
-            throw err;
-          }
-        }
       });
     }
   )
@@ -152,6 +142,7 @@ passport.use(
                 message: "Login failed",
               });
             } else {
+              console.log(user);
               const token = jwt.sign(
                 {
                   userId: user.id,
@@ -161,10 +152,9 @@ passport.use(
                 { expiresIn: "12h" }
               );
               const data = {
-                firstname: user.firstname,
-                lastname: user.lastname,
+                fullname: user.fullname,
                 role: user.role,
-                id: user.user_id,
+                id: user._id,
               };
               return done(null, user, {
                 status: "success",
@@ -188,9 +178,7 @@ const opts = {
 passport.use(
   "jwt",
   new JWTstrategy(opts, (jwt_payload, done) => {
-    console.log(opts);
     try {
-      console.log("JWT passport: " + jwt_payload.userId);
       //Pass the user details to the next middleware
       return done(null, jwt_payload.userId);
     } catch (error) {
@@ -202,12 +190,13 @@ passport.use(
 //verify a user token for admin
 
 passport.use(
-  "jwt-admin",
+  "admin",
   new JWTstrategy(opts, (jwt_payload, done) => {
     try {
-      console.log("JWT passport admin: " + jwt_payload.isAdmin);
+      console.log("JWT passport admin: " + JSON.stringify(jwt_payload));
       //Pass the user details to the next middleware
-      return done(null, jwt_payload.isAdmin);
+      const isAdmin = jwt_payload.role === 111;
+      return done(null, isAdmin);
     } catch (error) {
       done(error, false);
     }

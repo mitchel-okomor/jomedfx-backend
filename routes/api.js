@@ -22,10 +22,11 @@ router.delete("/user", auth.jwt, user.deleteUser);
 
 //event routes
 router.post("/package", auth.jwt, investment.create);
+router.get("/admin-packages", auth.jwt, auth.admin, investment.adminGetAll);
 router.get("/packages/:id", auth.jwt, investment.getAll);
 router.get("/package/:id", investment.get);
 router.patch("/package/:id", auth.jwt, investment.update);
-router.put("/publish/:id", auth.jwt, investment.togglePublish);
+router.put("/package/:id", auth.jwt, investment.togglePaid);
 router.put("/complete/:id", auth.jwt, investment.toggleComplete);
 router.delete("/package/:id", auth.jwt, investment.delete);
 

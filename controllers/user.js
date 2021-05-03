@@ -37,7 +37,7 @@ const user = {
 
   updateUser: (req, res) => {
     User.findByIdAndUpdate(req.params.id, {
-      name: req.body.name,
+      fullname: req.body.fullname,
       phone: req.body.phone,
       next_of_kin: req.body.next_of_kin,
       next_of_kin_phone: req.body.next_of_kin_phone,
