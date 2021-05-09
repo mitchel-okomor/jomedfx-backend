@@ -17,8 +17,11 @@ router.post("/signup", auth.register);
 router.post("/login", auth.login);
 router.get("/user/:id", auth.jwt, user.getUser);
 router.get("users", auth.jwt, user.getAllUsers);
-router.patch("/user", auth.jwt, user.updateUser);
+router.patch("/user/:id", auth.jwt, user.updateUser);
 router.delete("/user", auth.jwt, user.deleteUser);
+router.post("/forgot-password", user.forgotPassword);
+router.post("/resetpassword/:token", user.resetPassword);
+router.get("/verifytoken/:token", user.verifyToken);
 
 //event routes
 router.post("/package", auth.jwt, investment.create);

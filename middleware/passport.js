@@ -24,6 +24,11 @@ passport.use(
       passReqToCallback: true,
     },
     (req, username, password, done) => {
+      User.find({ email: req.body.email }).then((err, user) => {
+        if (user) {
+          return done("User already exist", null);
+        }
+      });
       //hash password with bcrypt-nodejs
       let salt = bcrypt.genSaltSync(10);
       bcrypt.hash(req.body.password, salt, null, (error, hash) => {
@@ -43,7 +48,7 @@ passport.use(
         const fullname = req.body.fullname.trim();
         const phone = req.body.phone.trim();
         const email = req.body.email.trim();
-        const user_id = generateID();
+        const address = req.body.address.trim();
         const next_of_kin = req.body.next_of_kin.trim();
         const next_of_kin_phone = req.body.next_of_kin_phone;
         const date_of_birth = req.body.date_of_birth;
@@ -61,6 +66,7 @@ passport.use(
           fullname,
           phone,
           email,
+          address,
           next_of_kin,
           next_of_kin_phone,
           date_of_birth,
@@ -83,7 +89,7 @@ passport.use(
               const data = {
                 fullname,
                 role: user.role,
-                id: user.user_id,
+                id: user._id,
               };
 
               //sign token for user
@@ -132,13 +138,12 @@ passport.use(
             message: "Incorrect username or password",
           });
         } else {
-          console.log("bcrypt " + user.password);
           //compare user imputed password with database password
           bcrypt.compare(password, user.password, (error, valid) => {
             if (error) {
-              console.log(error);
             } else if (!password || !valid) {
               return done(null, false, {
+                status: "error",
                 message: "Login failed",
               });
             } else {
