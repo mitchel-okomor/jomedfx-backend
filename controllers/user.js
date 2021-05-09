@@ -71,7 +71,7 @@ const user = {
           let token = jwt.sign({ user: user._id }, "shhhhh", {
             expiresIn: 60 * 60,
           });
-          let url = `http://localhost:3000/auth/resetpassword/${token}`;
+          let url = `https://jomedfx.netlify.app/auth/resetpassword/${token}`;
           let html = `click or copy and paste this link on your browser to change password<a href="${url}"> ${url}</a>`;
 
           helper.sendmail(user.email, token, html);
